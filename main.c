@@ -1,8 +1,8 @@
-
 #include "asic.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <time.h>
 
 // Define the target hash to compare against
 const uint8_t target_hash[32] = {
@@ -18,6 +18,14 @@ void generate_candidate(uint64_t nonce, uint8_t *candidate) {
     memcpy(candidate, &nonce, sizeof(nonce)); // Use nonce as input
 }
 
+// Function to print a hash as a hex string
+void print_hash(const uint8_t *hash) {
+    for (int i = 0; i < 32; i++) {
+        printf("%02x", hash[i]);
+    }
+    printf("\n");
+}
+
 int main() {
     printf("Starting ProphetDice S9 Custom Firmware...\n");
 
@@ -30,6 +38,7 @@ int main() {
     uint8_t output[32] = {0};
 
     uint64_t nonce = 0;
+    time_t start_time = time(NULL);
 
     while (1) {
         generate_candidate(nonce, candidate);
@@ -42,12 +51,16 @@ int main() {
 
         if (memcmp(output, target_hash, 32) == 0) {
             printf("Match found! Input: %llu\n", nonce);
+            printf("Output hash: ");
+            print_hash(output);
             break;
         }
 
         nonce++;
         if (nonce % 1000000 == 0) {
             printf("Checked %llu candidates...\n", nonce);
+            time_t current_time = time(NULL);
+            printf("Elapsed time: %ld seconds\n", current_time - start_time);
         }
     }
 
